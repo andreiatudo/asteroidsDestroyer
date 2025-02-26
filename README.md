@@ -1,142 +1,84 @@
-<!--[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/O6DR07p0)
--->
+# Description
+This project simulates a resource mining mission from asteroids using rockets, each with its own characteristics and operational costs. The goal is to optimize resource usage and associated costs, maximizing profit from selling the extracted resources. This involves calculating fuel costs, gross and net profit, and evaluating each rocket's efficiency based on its performance in multiple missions.
 
-# Minare de resurse de la asteroizi
+# Requirements
+## Reading Input Files:
+The input files will contain information about rockets, asteroids, and market prices.
 
-### Atudosiei Andrei Cristian 322AB
+- **rockets.csv**: Details about rockets, including transport capacity, fuel consumption, available fuel, and fuel price.
+- **asteroids.csv**: Information about asteroids, including available resources, total quantity, extraction yield, and distance to the asteroid.
+- **market.csv**: Market prices for resources, including the minimum and maximum price per kilogram.
 
-### Sistemul de operare si IDE-ul
+## Mission Calculations:
+Rocket missions will be calculated for each asteroid, starting with extracting resources from the first asteroid and continuing with the second asteroid if necessary. For each mission, the following will be calculated:
 
-- **Windows 11**
-- **Visual Studio 2022**
+- **Extracted quantity (kg)**: The amount of resource that the rocket can extract, based on yield and rocket capacity.
+- **Fuel consumed (kg)**: The amount of fuel used to reach the asteroid and return, considering distance and consumption per 1000 km.
+- **Fuel cost ($)**: The cost of fuel used in the mission, calculated based on price per kilogram.
+- **Gross profit ($)**: The profit obtained from selling the extracted resources, calculated based on the current market price.
+- **Net profit ($)**: The profit obtained after deducting the fuel cost from the gross profit.
 
-## Descriere generală
+## Total Profit Calculation per Rocket:
+The total profit obtained by each rocket will be calculated based on completed missions, including gross profit, total fuel cost, and net profit.
 
-În funcția `main` doar am declarat vectorii, am apelat funcțiile care creează vectorii cu ajutorul fișierelor și am apelat funcția care creează fișierele finale.
+## Profit Calculation per Resource:
+Gross profit and total extracted quantity will be calculated for each resource separately (Gold, Iron, Copper).
 
----
+## Rocket Ranking:
+Rockets will be ranked based on the net profit obtained from missions, and the efficiency of each rocket will be evaluated based on the efficiency score (Net profit divided by the number of completed missions).
 
-## Structura claselor
+# FunctionsHelper
 
-### **Asteroid**
+## **citireAsteroizi** (readAsteroids)
 
-- **Descriere:** Inițial voiam să pun automat ID-ul asteroidului, dar am observat că în fișierul de citire poate apărea același asteroid de mai multe ori.
-- **Atribute:**
-  - `id`
-  - `denumirea resursei`
-  - `cantitatea totală`
-  - `randamentul extracției`
-  - `distanța`
-- **Functii membre:**
-  - Constructori
-  - Destructor
-  - Operator de afișare
-  - Operator de atribuire
-  - Get-eri și set-eri
+- Read the first line with the titles.
+- Read line by line, separating based on the `;` delimiter.
+- Functions used:
+  - `linie.find` finds the first position of the `;` delimiter and continues as long as the delimiter exists.
+  - `substr` provides a substring.
+  - `stoi` converts a string to an integer.
+  - `linie.erase(0, poz+1)` deletes characters from the beginning and removes the specified number of characters.
+- Create the object and add it to the vector.
 
-### **Piață**
+## **citireRachete** (readRockets) and **citirePiata** (readMarket)
 
-- **Atribute:**
-  - `denumirea resursei`
-  - `cantitatea de resurse vândută`
-  - `prețul minim`
-  - `prețul maxim` (acesta este prețul curent)
-  - `prețul actual` (care este de fapt prețul inițial)
-- **Funcții membre:**
-  - Constructori
-  - Destructor
-  - Operator de atribuire
-  - Operator de afișare
-  - Get-eri și set-eri
+- Structure similar to `citireAsteroizi`.
+- The information follows the example from OCW.
 
-### **Rachetă**
+## **calculareKgTotalePerAsteroid** (calculateTotalKgPerAsteroid)
 
-- **Atribute:**
-  - `capacitatea`
-  - `consumul combustibilului`
-  - `combustibilul disponibil`
-  - `prețul`
-  - `id-ul rachetei`
-  - `static int` care va fi valoarea ID-ului
-- **Funcționalități:**
-  - Constructori
-  - Destructor
-  - Operator de atribuire
-  - Operator de afișare
-  - Get-eri și set-eri
+- Calculates the total amount extracted from the asteroid.
 
-### **Misiune**
+## **distantePerAsteroid** (distancesPerAsteroid)
 
-- **Atribute:** Similar celorlalte clase, cu informațiile care apăreau în exemplul de pe OCW.
-- **Funcții membre:** Funcțiile membre necesare.
+- Calculates the distances from each asteroid.
 
-> Operatorii de afișare m-au ajutat pentru debugging, pentru a observa dacă se citesc obiectele corespunzător din fișierele de input.
+## **creareMisiuni** (createMissions)
 
----
+- I apologize in advance for the fact that the function is so long; I know I could have split it into several subprograms.
+- **Vectors used:**
+  - The missions vector.
+  - The vector with total kg per asteroid.
+  - The vector with the rocket order.
+  - The vector with distances per asteroid.
 
-## FunctionsHelper
+### **Steps:**
 
-### **citireAsteroizi**
+1. Traverse the `kgTotalePerAsteroid` vector.
+2. Calculate the rocket with the minimum cost, based on the number of trips it would make and how much one trip costs.
+3. Adjust the total kg vector for the asteroid.
+4. Calculate the fuel cost.
+5. Then I considered 3 cases:
 
-- Citirea primei linii cu titlurile.
-- Citirea linie cu linie, separarea pe baza separatorului `;`.
-- Utilizare funcții:
-  - `linie.find` găsește prima poziție a separatorului `;` și continuă cât timp există separatorul.
-  - `substr` oferă un subsir.
-  - `stoi` transformă un string în int.
-  - `linie.erase(0, poz+1)` șterge caracterele de la început și șterge numărul de caractere precizat
-- Crearea obiectului și adăugarea în vector.
+   - **The case where the rocket's capacity is greater than the kg of a particular resource from the asteroid:**
+     - It is divided into 2 sub-cases:
+       1. If there are still resources on the asteroid, check if they fit in the rocket.
+       2. If they don't fit, add as much as possible to the rocket and continue with the next trip.
+       3. If everything fits, add all of the resource's amount.
+       - In these 2 cases, adding two types of resources in the same rocket happens.
 
-### **citireRachete** și **citirePiata**
+   - **The case where the rocket's capacity is less than the kg of a particular resource from the asteroid:**
+     - In this case, fill the rocket, then move to the next one in the order vector.
 
-- Structură similară cu `citireAsteroizi`.
-- Informațiile respectă exemplul de pe OCW.
+6. Calculate the gross profit during this time.
 
-### **calculareKgTotalePerAsteroid**
-
-- Calculează cantitatea totală extrasă de pe asteroid.
-
-### **distantePerAsteroid**
-
-- Calculează distanțele de la fiecare asteroid.
-
-### **creareMisiuni**
-
-- Îmi cer scuze în avans pentru faptul că funcția este atât de lungâ, stiu că aș fi putut să o sparg in mai multe subprograme
-- **Vectori utilizați:**
-  - Vectorul de misiuni.
-  - Vectorul cu kg per asteroid.
-  - Vectorul cu ordinea rachetelor.
-  - Vectorul cu distanțele per asteroid.
-- **Pași:**
-
-  1. Parcurgerea vectorului `kgTotalePerAsteroid`.
-  2. Calcularea rachetei cu costul minim, în funcție de numărul de drumuri pe care le-ar face si cat ar costa un drum.
-  3. Ajustarea vectorului de kg totale ale asteroidului.
-  4. Calcularea costului combustibilului.
-  5. Apoi am luat 3 cazuri:
-
-  - Cazul în care capacitatea rachetei e mai mare decât kg de o anumită resursă de pe asteroid și de aici se împarte în 2 cazuri, deoarece vom continua cu resursele de pe asteroidul curent dacă mai sunt și dacă da, verificăm dacă mai încap în rachetă. Dacă nu încap, adăugăm cât mai putem în rachetă și continuăm cu următorul drum. Dacă mai încape tot, adăugăm toată cantitatea din acea resursă (în aceste 2 cazuri se întâmplă adăugarea a două tipuri de resursă în aceeași rachetă).
-  - Cazul în care capacitatea rachetei e mai mică decât kg de o anumită resursă de pe asteroid. În acest caz, umplem racheta după care trecem la următoarea din vectorul de ordine.
-
-  6. Calcularea profitului brut în tot acest timp.
-
-### **creareFisiere**
-
-În această funcție ne-am folosit de vectorul de misiuni și vectorul cu piața pentru a crea toate fișierele de afișare conform exemplului de pe OCW.
-
-## Fișier 1: misiuni.csv
-
-Pentru primul fișier de afișare, doar am afișat informațiile din misiune cum se cere (acum am realizat că aș fi putut face asta direct în operatorul de afișare).
-
-## Fișier 2: profit_total.csv
-
-Pentru al doilea fișier m-am folosit de un vector tuple (care conține 3 câmpuri diferite per element). M-am folosit de acesta pentru a afișa profiturile per rachetă și pentru a ține minte în câte misiuni a fost fiecare rachetă.
-
-## Fișier 3: profit_resursa.csv
-
-Pentru al treilea fișier, m-am folosit de faptul că am ținut minte în vectorul cu piața, cantitatea de fiecare resursă vândută și am calculat profitul și am scăzut prețul resursei conform formulei. Dacă cantitatea vândută era mai mică decât pasul pentru împărțirea prețului per kg, înmulțeam doar cantitatea vândută cu prețul actual, dacă nu înmulțeam 10000 cu prețul actual.
-
-## Fișier 4: clasament_rachete.csv
-
-Pentru al patrulea fișier, m-am folosit de același vector tuple de mai sus, pe care l-am sortat în funcție de profitul mediu per misiune de pe rachetă printr-o expresie lambda. Am verificat dacă ambele au cel puțin o misiune realizată și le-am sortat. Dacă nu, am luat doar racheta care avea cel puțin o misiune sau oricare. Apoi am afișat acest vector tuple.
